@@ -1,0 +1,13 @@
+{
+  "displayName": "PlayerTest",
+  "guid": "191e592af2932c6b1b11c12108a5f759",
+  "importSettings": {
+    "runtimeLoader": "SceneSerializer",
+    "sourceAuthoritative": true
+  },
+  "importerId": "SceneAssetImporter",
+  "importerVersion": 3,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Scenes/PlayerTest.hscene",
+  "type": "Scene"
+}
