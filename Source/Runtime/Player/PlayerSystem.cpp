@@ -6,7 +6,7 @@
 #include <string>
 
 #include "HIKARI/Project/ActionViews.h"
-#include "HIKARI/Project/PresentationViews.h"
+#include "HIKARI/Project/VfxView.h"
 
 #include "PlayerComponent.h"
 #include "PlayerMath.h"
@@ -30,8 +30,6 @@ constexpr float kMaximumCameraPitchDegrees = 89.0f;
 constexpr Float3 kWorldUp{0.0f, 1.0f, 0.0f};
 // エンジンが提出元を見分けるための番号（同じオブジェクトの中で重ならなければよい）。
 constexpr uint64_t kCameraSourceId = 0x514C504Cu;
-constexpr uint64_t kMuzzleFlashInstanceId = 1u;
-constexpr uint64_t kFirstBulletInstanceId = 2u;
 
 struct PlayerInput {
     Float3 move{};
@@ -169,7 +167,8 @@ void AdvanceTimers(const PlayerComponent& player, PlayerRuntimeState& state, flo
     }
 }
 
-// このフレームの速度を返す。回避中は入力を受け付けず、決めた向きへ一定の速さで進む。
+// このフレームの速度を返す。回避中は入力を受け付けず、決めた向きへ進む。
+// 回避の速さは出だしが速く終わりが緩い（dodgeFrontLoad が 0 なら一定）。重みの積分は 1 なので、進む距離は変わらない。
 Float3 UpdateMovement(const PlayerComponent& player, PlayerRuntimeState& state, const PlayerInput& input, float dt) {
     if (state.action == PlayerAction::Locomotion && input.dodgePressed && state.dodgeCooldown <= 0.0f) {
         state.action = PlayerAction::Dodge;
@@ -179,7 +178,10 @@ Float3 UpdateMovement(const PlayerComponent& player, PlayerRuntimeState& state, 
     if (state.action == PlayerAction::Dodge) {
         state.dodgeElapsed += dt;
         if (state.dodgeElapsed < player.dodgeSeconds) {
-            return Scale(state.dodgeDirection, player.dodgeDistance / player.dodgeSeconds);
+            // このフレームの中ほどの進み具合で速さを決める（端の値だと合計の距離がずれる）。
+            const float progress = std::clamp((state.dodgeElapsed - 0.5f * dt) / player.dodgeSeconds, 0.0f, 1.0f);
+            const float weight = (1.0f + player.dodgeFrontLoad) * std::pow(1.0f - progress, player.dodgeFrontLoad);
+            return Scale(state.dodgeDirection, player.dodgeDistance / player.dodgeSeconds * weight);
         }
         state.action = PlayerAction::Locomotion;
         state.dodgeCooldown = player.dodgeCooldownSeconds;
@@ -214,7 +216,24 @@ Float3 MuzzlePosition(const PlayerComponent& player, Float3 position, float yawR
     return Add(Add(position, forward), {0.0f, player.muzzleHeight, 0.0f});
 }
 
-void UpdateWeapon(const PlayerComponent& player, PlayerRuntimeState& state, const PlayerInput& input, Float3 position) {
+// 効果を 1 回再生する。資産が設定されていなければ何もしない。効果の +Z が前。
+HIKARI::GameProjectVfxPlaybackHandle PlayEffect(const HIKARI::VfxView& vfx, const std::string& assetGuid,
+                                                uint64_t ownerHandle, Float3 position, float yawRadians,
+                                                uint32_t randomSeed) {
+    HIKARI::GameProjectVfxPlayRequest request{};
+    if (assetGuid.empty() || assetGuid.size() >= sizeof(request.asset.assetGuid)) {
+        return {};
+    }
+    std::memcpy(request.asset.assetGuid, assetGuid.data(), assetGuid.size());
+    request.ownerObjectHandle = ownerHandle;
+    request.transform.position = position;
+    request.transform.rotation = YawRotation(yawRadians);
+    request.randomSeed = randomSeed;
+    return vfx.Play(request);
+}
+
+void UpdateWeapon(const HIKARI::WorldView& world, uint64_t ownerHandle, const PlayerComponent& player,
+                  PlayerRuntimeState& state, const PlayerInput& input, Float3 position) {
     const bool reloading = state.reloadElapsed >= 0.0f;
     if (!reloading && input.reloadPressed && state.ammo < player.magazineSize) {
         state.reloadElapsed = 0.0f;
@@ -237,55 +256,40 @@ void UpdateWeapon(const PlayerComponent& player, PlayerRuntimeState& state, cons
         return;
     }
     const float spread = (NextUnitRandom(state.spreadSeed) * 2.0f - 1.0f) * player.spreadDegrees * kDegreesToRadians;
-    slot->position = MuzzlePosition(player, position, state.yawRadians);
-    slot->direction = DirectionFromYaw(state.yawRadians + spread);
+    const float shotYaw = state.yawRadians + spread;
+    const Float3 muzzle = MuzzlePosition(player, position, state.yawRadians);
+    const HIKARI::VfxView vfx = world.GetVfx();
+    slot->position = muzzle;
+    slot->direction = DirectionFromYaw(shotYaw);
     slot->remainingRange = player.bulletRange;
     slot->active = true;
+    // 弾は効果の根を飛ばすだけ。粒子は通った跡に残って曳光になる。
+    slot->effect = PlayEffect(vfx, player.bulletVfxGuid, ownerHandle, muzzle, shotYaw, state.spreadSeed);
+    if (slot->effect.IsValid()) {
+        vfx.SetVelocity(slot->effect, Scale(slot->direction, player.bulletSpeed));
+    }
+    PlayEffect(vfx, player.muzzleVfxGuid, ownerHandle, muzzle, state.yawRadians, state.spreadSeed);
     --state.ammo;
     state.fireCooldown = player.fireIntervalSeconds;
     state.sinceShot = 0.0f;
 }
 
-// 描画だけのモデルを 1 フレーム分頼む。次のフレームに頼まなければ自動で消える。
-void SubmitModel(const HIKARI::PresentationModelView& models, const std::string& modelGuid, uint64_t ownerHandle,
-                 uint64_t instanceId, Float3 position, float yawRadians, float scale) {
-    HIKARI::GameProjectPresentationModelRequest request{};
-    if (modelGuid.empty() || modelGuid.size() >= sizeof(request.model.assetGuid)) {
-        return;
-    }
-    std::memcpy(request.model.assetGuid, modelGuid.data(), modelGuid.size());
-    request.ownerObjectHandle = ownerHandle;
-    request.instanceId = instanceId;
-    request.worldTransform.position = position;
-    request.worldTransform.rotation = YawRotation(yawRadians);
-    request.worldTransform.scale = {scale, scale, scale};
-    request.castShadow = 0u;
-    request.receiveShadow = 0u;
-    models.Submit(request);
-}
-
-void UpdateBullets(const HIKARI::WorldView& world, uint64_t ownerHandle, const PlayerComponent& player,
-                   PlayerRuntimeState& state, Float3 position, float dt) {
-    const HIKARI::PresentationModelView models = world.GetPresentationModels();
+void UpdateBullets(const HIKARI::WorldView& world, const PlayerComponent& player, PlayerRuntimeState& state, float dt) {
+    const HIKARI::VfxView vfx = world.GetVfx();
     const float step = player.bulletSpeed * dt;
-    for (size_t index = 0u; index < state.bullets.size(); ++index) {
-        PlayerBullet& bullet = state.bullets[index];
+    for (PlayerBullet& bullet : state.bullets) {
         if (!bullet.active) {
             continue;
         }
         bullet.position = Add(bullet.position, Scale(bullet.direction, step));
         bullet.remainingRange -= step;
         if (bullet.remainingRange <= 0.0f) {
-            bullet.active = false;
-            continue;
+            // 射程が尽きたら曳光を止める。残っている粒子は自分の寿命で消える。
+            if (bullet.effect.IsValid()) {
+                vfx.Stop(bullet.effect);
+            }
+            bullet = PlayerBullet{};
         }
-        SubmitModel(models, player.bulletModelGuid, ownerHandle, kFirstBulletInstanceId + index, bullet.position,
-                    YawFromDirection(bullet.direction), player.bulletScale);
-    }
-    if (state.sinceShot >= 0.0f && state.sinceShot < player.muzzleFlashSeconds) {
-        SubmitModel(models, player.bulletModelGuid, ownerHandle, kMuzzleFlashInstanceId,
-                    MuzzlePosition(player, position, state.yawRadians), state.yawRadians,
-                    player.bulletScale * player.muzzleFlashScale);
     }
 }
 
@@ -392,6 +396,7 @@ void UpdatePlayer(const HIKARI::WorldView& world, HIKARI::ObjectView object, Pla
     }
     const PlayerInput input = ReadInput(world, player, transform.position);
     AdvanceTimers(player, state, dt);
+    const PlayerAction actionBefore = state.action;
     const Float3 velocity = UpdateMovement(player, state, input, dt);
     UpdateFacing(player, state, input, velocity, dt);
 
@@ -401,9 +406,13 @@ void UpdatePlayer(const HIKARI::WorldView& world, HIKARI::ObjectView object, Pla
         return;
     }
     const uint64_t handle = object.GetHandle().value;
-    UpdateWeapon(player, state, input, transform.position);
+    if (state.action == PlayerAction::Dodge && actionBefore != PlayerAction::Dodge) {
+        // 踏み切った足元に土ぼこりを出す。
+        PlayEffect(world.GetVfx(), player.dodgeVfxGuid, handle, transform.position, state.yawRadians, state.spreadSeed);
+    }
+    UpdateWeapon(world, handle, player, state, input, transform.position);
     UpdateAnimation(world, handle, player, state, Length(velocity));
-    UpdateBullets(world, handle, player, state, transform.position, dt);
+    UpdateBullets(world, player, state, dt);
     UpdateCamera(world, player, state, transform.position, dt);
 }
 

@@ -12,6 +12,8 @@ void PlayerComponent::DescribeProperties(HIKARI::PropertyFields& fields) {
         fields.Float("dodgeDistance", "Distance (m)", dodgeDistance, 0.0f, 12.0f, 0.05f);
         fields.Float("dodgeSeconds", "Duration (s)", dodgeSeconds, 0.05f, 2.0f, 0.01f);
         fields.Float("dodgeCooldown", "Cooldown (s)", dodgeCooldownSeconds, 0.0f, 5.0f, 0.01f);
+        fields.Float("dodgeFrontLoad", "Burst (0 = constant speed)", dodgeFrontLoad, 0.0f, 4.0f, 0.05f);
+        fields.Asset("dodgeVfx", "Dodge Dust Effect", HIKARI::GameProjectAssetKind::VfxEffect, dodgeVfxGuid);
     }
     if (fields.Section("Weapon", true)) {
         fields.Float("fireInterval", "Fire Interval (s)", fireIntervalSeconds, 0.02f, 2.0f, 0.005f);
@@ -20,12 +22,10 @@ void PlayerComponent::DescribeProperties(HIKARI::PropertyFields& fields) {
         fields.Float("spread", "Spread (deg)", spreadDegrees, 0.0f, 30.0f, 0.1f);
         fields.Float("bulletSpeed", "Bullet Speed (m/s)", bulletSpeed, 1.0f, 120.0f, 0.5f);
         fields.Float("bulletRange", "Bullet Range (m)", bulletRange, 1.0f, 100.0f, 0.5f);
-        fields.Float("bulletScale", "Bullet Scale", bulletScale, 0.1f, 10.0f, 0.05f);
         fields.Float("muzzleForward", "Muzzle Forward (m)", muzzleForward, 0.0f, 3.0f, 0.01f);
         fields.Float("muzzleHeight", "Muzzle Height (m)", muzzleHeight, 0.0f, 3.0f, 0.01f);
-        fields.Float("muzzleFlashSeconds", "Muzzle Flash Time (s)", muzzleFlashSeconds, 0.0f, 0.5f, 0.005f);
-        fields.Float("muzzleFlashScale", "Muzzle Flash Scale", muzzleFlashScale, 0.1f, 10.0f, 0.05f);
-        fields.Asset("bulletModel", "Bullet Model", HIKARI::GameProjectAssetKind::Model, bulletModelGuid);
+        fields.Asset("muzzleVfx", "Muzzle Flash Effect", HIKARI::GameProjectAssetKind::VfxEffect, muzzleVfxGuid);
+        fields.Asset("bulletVfx", "Bullet Tracer Effect", HIKARI::GameProjectAssetKind::VfxEffect, bulletVfxGuid);
     }
     if (fields.Section("Camera", true)) {
         fields.SceneObject("camera", "Camera", cameraObjectId);

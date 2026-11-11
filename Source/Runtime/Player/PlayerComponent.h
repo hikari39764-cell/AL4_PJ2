@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "HIKARI/Project/GameComponent.h"
+#include "HIKARI/Project/VfxTypes.h"
 
 namespace Project_AL4_PJ2 {
 
@@ -40,6 +41,8 @@ struct PlayerBullet {
     HIKARI::GameProjectFloat3 direction{0.0f, 0.0f, 1.0f};
     float remainingRange = 0.0f;
     bool active = false;
+    // 弾と一緒に飛んでいる曳光の効果。
+    HIKARI::GameProjectVfxPlaybackHandle effect{};
 };
 
 // Play 中だけの状態。シーンには保存しない。
@@ -78,6 +81,8 @@ public:
     float dodgeDistance = 4.0f;
     float dodgeSeconds = 0.5f;
     float dodgeCooldownSeconds = 0.35f;
+    float dodgeFrontLoad = 1.6f;
+    std::string dodgeVfxGuid;
 
     // 射撃
     float fireIntervalSeconds = 0.12f;
@@ -86,12 +91,10 @@ public:
     float spreadDegrees = 1.5f;
     float bulletSpeed = 28.0f;
     float bulletRange = 22.0f;
-    float bulletScale = 1.0f;
     float muzzleForward = 1.05f;
     float muzzleHeight = 1.45f;
-    float muzzleFlashSeconds = 0.05f;
-    float muzzleFlashScale = 1.6f;
-    std::string bulletModelGuid;
+    std::string muzzleVfxGuid;
+    std::string bulletVfxGuid;
 
     // カメラ
     uint64_t cameraObjectId = 0u;
@@ -119,8 +122,8 @@ public:
     std::string fireClip = "Fire";
     std::string reloadClip = "Reload";
     std::string upperBodyNode = "chest";
-    float walkClipSpeed = 1.31f;
-    float runClipSpeed = 3.9f;
+    float walkClipSpeed = 1.46f;
+    float runClipSpeed = 4.02f;
     float runSpeedThreshold = 2.2f;
     float dodgeClipSeconds = 0.5f;
     float fireClipSeconds = 0.208f;

@@ -49,9 +49,9 @@ public:
     std::string_view GetFeatureId() const noexcept override { return "Project_AL4_PJ2.Gameplay"; }
     std::string_view GetDisplayName() const noexcept override { return "Gameplay"; }
     std::string_view GetDescription() const noexcept override { return "Project game logic"; }
-    // プレイヤーがアニメーションを切り替え、SceneLook が後処理の値を上書きするので、両方を必ず有効にさせる。
+    // プレイヤーがアニメーションと射撃の VFX を使い、SceneLook が後処理の値を上書きするので、必ず有効にさせる。
     std::span<const std::string_view> GetRequiredFeatureIds() const noexcept override {
-        static constexpr std::array<std::string_view, 2> features{{"Animation", "ActionPresentation"}};
+        static constexpr std::array<std::string_view, 3> features{{"Animation", "Vfx", "ActionPresentation"}};
         return features;
     }
     std::span<const HIKARI::RuntimeSystemDefault> GetDefaultSystems() const noexcept override {
