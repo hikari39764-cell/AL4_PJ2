@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <memory>
 
+#include "Player/PlayerComponent.h"
+#include "Player/PlayerSystem.h"
+
 namespace Project_AL4_PJ2 {
 
 // Play 中にシーンをまたいで保持するプロジェクト状態。
@@ -45,12 +48,22 @@ public:
     std::string_view GetFeatureId() const noexcept override { return "Project_AL4_PJ2.Gameplay"; }
     std::string_view GetDisplayName() const noexcept override { return "Gameplay"; }
     std::string_view GetDescription() const noexcept override { return "Project game logic"; }
+    // プレイヤーがアニメーションを切り替えるので、Animation を必ず有効にさせる。
+    std::span<const std::string_view> GetRequiredFeatureIds() const noexcept override {
+        static constexpr std::array<std::string_view, 1> features{{"Animation"}};
+        return features;
+    }
     std::span<const HIKARI::RuntimeSystemDefault> GetDefaultSystems() const noexcept override {
         static constexpr std::array<HIKARI::RuntimeSystemDefault, 1> systems{{{"Project_AL4_PJ2.Game", true, 100}}};
         return systems;
     }
     bool Register(HIKARI::RuntimeFeatureContext& context) override {
-        return context.RegisterSystem<Game>({.systemId = "Project_AL4_PJ2.Game", .displayName = "Game"});
+        return context.RegisterSystem<Game>({.systemId = "Project_AL4_PJ2.Game", .displayName = "Game"}) &&
+               context.RegisterComponent<PlayerComponent>({.typeName = kPlayerComponentType,
+                                                           .displayName = "Player",
+                                                           .description = "Q: move, aim, fire, reload, dodge"}) &&
+               context.RegisterSystem<PlayerSystem>({.systemId = kPlayerSystemId, .displayName = "Player"}) &&
+               context.BindComponentSystem({.componentType = kPlayerComponentType, .systemId = kPlayerSystemId});
     }
 };
 
