@@ -1,138 +1,69 @@
 {
-  "version": 10,
-  "sceneName": "PlayerTest",
   "camera": {
     "defaultCameraObjectId": 10
   },
+  "cinematics": {
+    "defaultSequenceId": 1,
+    "sequences": [
+      {
+        "bindings": [],
+        "durationSeconds": 10.0,
+        "id": 1,
+        "name": "Main Sequence",
+        "screenEffects": [],
+        "tracks": [
+          {
+            "clips": [],
+            "enabled": true,
+            "id": 1,
+            "type": "cameraCut"
+          }
+        ]
+      }
+    ]
+  },
   "environment": {
-    "schemaVersion": 2,
-    "ambient": {
-      "color": [
-        0.62,
-        0.6,
-        0.58
-      ],
-      "intensity": 0.42,
-      "skyBlend": 0.0,
-      "useSkyColor": false
+    "location": {
+      "latitudeDegrees": 35.68,
+      "longitudeDegrees": 139.69,
+      "northYawDegrees": 0.0,
+      "utcOffsetHours": 9.0
     },
-    "ambientOcclusion": {
-      "bias": 0.025,
-      "blurIterations": 1,
-      "diffuseStrength": 1.0,
-      "enabled": true,
-      "mode": "Balanced",
-      "power": 1.5,
-      "radius": 0.5,
-      "sampleCount": 16,
-      "specularStrength": 0.5,
-      "strength": 0.6
+    "profile": "8428d4d63eb4934e889f780cd024fe4c",
+    "renderStyle": "engine.style.realistic",
+    "time": {
+      "day": 21,
+      "localHours": 10.0,
+      "month": 6,
+      "year": 2026
     },
-    "atmosphere": {
-      "enabled": false
-    },
-    "bloom": {
-      "downsampleCount": 5,
-      "enabled": true,
-      "intensity": 0.25,
-      "radius": 0.5,
-      "threshold": 1.0
-    },
-    "clouds": {
-      "enabled": false
-    },
-    "directionalShadow": {
-      "cascadeBlend": 0.1,
-      "cascadeCount": 3,
-      "cascadeSplitLambda": 0.65,
-      "depthBias": 0.001,
-      "enabled": true,
-      "farPlane": 80.0,
-      "nearPlane": 0.1,
-      "normalBias": 0.02,
-      "pcfEnabled": true,
-      "pcfRadius": 1.0,
-      "resolution": 2048,
-      "shadowDistance": 45.0,
-      "stabilize": true,
-      "strength": 0.7
-    },
-    "fog": {
-      "enabled": false
-    },
-    "screenSpaceReflections": {
-      "enabled": false
-    },
-    "showLightDebug": false,
-    "showSkyDebugInfo": false,
-    "sky": {
-      "ambientFromSky": 0.0,
-      "enabled": false
-    },
-    "sunGlare": {
-      "enabled": false
-    },
-    "surfaceLightmaps": {
-      "enabled": false
-    },
-    "toneMapping": {
-      "contrast": 1.0,
-      "enabled": true,
-      "exposure": 1.0,
-      "exposureMode": "Manual",
-      "gamma": 2.2,
-      "mode": 2,
-      "saturation": 1.0,
-      "whiteBalanceTemperature": 6500.0,
-      "whiteBalanceTint": 0.0
-    }
+    "timeScale": 0.0,
+    "weather": "engine.weather.overcast"
+  },
+  "lightingBake": {
+    "bounceCount": 8,
+    "sampleCount": 256
   },
   "objects": [
     {
-      "id": 1,
-      "name": "Q",
-      "parent": null,
-      "sourcePrefabId": "",
-      "editorFolder": "",
-      "editorLocked": false,
-      "editorVisible": true,
-      "enabled": true,
-      "transform": {
-        "position": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "rotationEulerDeg": [
-          0.0,
-          0.0,
-          0.0
-        ],
-        "scale": [
-          1.0,
-          1.0,
-          1.0
-        ]
-      },
       "components": [
         {
           "id": 101,
-          "type": "ModelComponent",
           "properties": {
             "assetId": "d6991b1a965e1003c4ef614e84bc2456",
             "castShadow": true,
             "includeInLightingBake": false,
             "materialOverrides": [],
             "materialSetAssetGuid": "",
+            "postGroupMask": 1,
             "receiveShadow": true,
             "renderStatic": false,
-            "visible": true,
-            "postGroupMask": 1
-          }
+            "visible": true
+          },
+          "type": "ModelComponent"
         },
         {
           "id": 102,
-          "type": "AnimatorComponent",
           "properties": {
             "autoPlay": true,
             "clip": "Idle",
@@ -144,37 +75,79 @@
             "rootMotionEnabled": false,
             "speed": 1,
             "timeSec": 0
-          }
+          },
+          "type": "AnimatorComponent"
         },
         {
           "id": 103,
-          "type": "Project_AL4_PJ2.Player",
           "properties": {
+            "bulletVfx": {
+              "$hikari.assetGuid": "26ebe9981cf6ce673d4325b09846f949"
+            },
             "camera": {
               "$hikariRef": "SceneObject",
               "id": 10
             },
-            "bulletModel": {
-              "$hikari.assetGuid": "b23fd5b38d4fc57e5185f6dc4c0e6d05"
+            "dodgeVfx": {
+              "$hikari.assetGuid": "f2e60f1446d3c0f14677adf22188b663"
+            },
+            "muzzleVfx": {
+              "$hikari.assetGuid": "b5992cd3916cff60faf1956932b5d503"
             }
-          }
+          },
+          "type": "Project_AL4_PJ2.Player"
         }
-      ]
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 1,
+      "name": "Q",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
     },
     {
+      "components": [
+        {
+          "id": 1001,
+          "properties": {
+            "enabled": true,
+            "farClip": 200,
+            "nearClip": 0.1,
+            "verticalFovDegrees": 20
+          },
+          "type": "CameraComponent"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
       "id": 10,
       "name": "GameCamera",
       "parent": null,
       "sourcePrefabId": "",
-      "editorFolder": "",
-      "editorLocked": false,
-      "editorVisible": true,
-      "enabled": true,
       "transform": {
         "position": [
           0.0,
-          15.74,
-          -10.32
+          15.739999771118164,
+          -10.319999694824219
         ],
         "rotationEulerDeg": [
           55.0,
@@ -186,50 +159,12 @@
           1.0,
           1.0
         ]
-      },
-      "components": [
-        {
-          "id": 1001,
-          "type": "CameraComponent",
-          "properties": {
-            "enabled": true,
-            "verticalFovDegrees": 20,
-            "nearClip": 0.1,
-            "farClip": 200
-          }
-        }
-      ]
+      }
     },
     {
-      "id": 20,
-      "name": "Sun",
-      "parent": null,
-      "sourcePrefabId": "",
-      "editorFolder": "",
-      "editorLocked": false,
-      "editorVisible": true,
-      "enabled": true,
-      "transform": {
-        "position": [
-          0.0,
-          25.0,
-          0.0
-        ],
-        "rotationEulerDeg": [
-          52.0,
-          35.0,
-          0.0
-        ],
-        "scale": [
-          1.0,
-          1.0,
-          1.0
-        ]
-      },
       "components": [
         {
           "id": 2001,
-          "type": "LightComponent",
           "properties": {
             "castsShadows": true,
             "color": [
@@ -246,19 +181,60 @@
             "range": 100,
             "sourceRadius": 0.5,
             "type": "Directional"
-          }
+          },
+          "type": "LightComponent"
         }
-      ]
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 20,
+      "name": "Sun",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          0.0,
+          25.0,
+          0.0
+        ],
+        "rotationEulerDeg": [
+          52.0,
+          35.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
     },
     {
+      "components": [
+        {
+          "id": 3001,
+          "properties": {
+            "assetId": "15a354c1bca0a4017e2e4cf72d7d14f3",
+            "castShadow": false,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": true,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
       "id": 30,
       "name": "TestFloor",
       "parent": null,
       "sourcePrefabId": "",
-      "editorFolder": "",
-      "editorLocked": false,
-      "editorVisible": true,
-      "enabled": true,
       "transform": {
         "position": [
           0.0,
@@ -275,56 +251,36 @@
           1.0,
           1.0
         ]
-      },
-      "components": [
-        {
-          "id": 3001,
-          "type": "ModelComponent",
-          "properties": {
-            "assetId": "15a354c1bca0a4017e2e4cf72d7d14f3",
-            "castShadow": false,
-            "includeInLightingBake": false,
-            "materialOverrides": [],
-            "materialSetAssetGuid": "",
-            "receiveShadow": true,
-            "renderStatic": true,
-            "visible": true,
-            "postGroupMask": 1
-          }
-        }
-      ]
+      }
     }
   ],
-  "editorFolders": [],
+  "sceneName": "PlayerTest",
   "systems": [
     {
-      "systemId": "Project_AL4_PJ2.Game",
       "enabled": true,
       "executionOrder": 100,
-      "settings": {}
+      "settings": {},
+      "systemId": "Project_AL4_PJ2.Game"
     },
     {
-      "systemId": "Project_AL4_PJ2.SceneLook",
       "enabled": true,
       "executionOrder": 110,
       "settings": {
-        "renderStyle": "engine.style.pixel",
-        "pixelOverride": true,
-        "pixelSize": 4.0,
         "pixelColorLevels": 16.0,
         "pixelDither": 0.15,
-        "pixelOutline": 0.6
-      }
+        "pixelOutline": 0.6,
+        "pixelOverride": true,
+        "pixelSize": 4.0,
+        "renderStyle": "engine.style.pixel"
+      },
+      "systemId": "Project_AL4_PJ2.SceneLook"
     },
     {
-      "systemId": "ModelRenderSystem",
       "enabled": true,
       "executionOrder": 200,
-      "settings": {}
+      "settings": {},
+      "systemId": "ModelRenderSystem"
     }
   ],
-  "cinematics": {
-    "defaultSequenceId": 0,
-    "sequences": []
-  }
+  "version": 10
 }

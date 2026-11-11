@@ -1,0 +1,10 @@
+{
+  "displayName": "Default",
+  "guid": "8428d4d63eb4934e889f780cd024fe4c",
+  "importSettings": {},
+  "importerId": "EnvironmentAssetImporter",
+  "importerVersion": 1,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Environment/Environment.henvironment",
+  "type": "Environment"
+}
