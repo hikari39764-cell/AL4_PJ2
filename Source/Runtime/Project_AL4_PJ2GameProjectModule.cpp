@@ -4,9 +4,10 @@
 #include <cstdint>
 #include <memory>
 
+#include "Combat/HitReactionSystem.h"
+#include "Combat/HitTargetComponent.h"
 #include "Player/PlayerComponent.h"
 #include "Player/PlayerSystem.h"
-#include "Presentation/SceneLookSystem.h"
 
 namespace Project_AL4_PJ2 {
 
@@ -49,14 +50,13 @@ public:
     std::string_view GetFeatureId() const noexcept override { return "Project_AL4_PJ2.Gameplay"; }
     std::string_view GetDisplayName() const noexcept override { return "Gameplay"; }
     std::string_view GetDescription() const noexcept override { return "Project game logic"; }
-    // プレイヤーがアニメーションと射撃の VFX を使い、SceneLook が後処理の値を上書きするので、必ず有効にさせる。
+    // プレイヤーがアニメーション・見下ろしカメラ・射撃の VFX を使うので、必ず有効にさせる。
     std::span<const std::string_view> GetRequiredFeatureIds() const noexcept override {
-        static constexpr std::array<std::string_view, 3> features{{"Animation", "Vfx", "ActionPresentation"}};
+        static constexpr std::array<std::string_view, 3> features{{"Animation", "Camera", "Vfx"}};
         return features;
     }
     std::span<const HIKARI::RuntimeSystemDefault> GetDefaultSystems() const noexcept override {
-        static constexpr std::array<HIKARI::RuntimeSystemDefault, 2> systems{
-            {{"Project_AL4_PJ2.Game", true, 100}, {kSceneLookSystemId, true, 110}}};
+        static constexpr std::array<HIKARI::RuntimeSystemDefault, 1> systems{{{"Project_AL4_PJ2.Game", true, 100}}};
         return systems;
     }
     bool Register(HIKARI::RuntimeFeatureContext& context) override {
@@ -65,8 +65,15 @@ public:
                                                            .displayName = "Player",
                                                            .description = "Q: move, aim, fire, reload, dodge"}) &&
                context.RegisterSystem<PlayerSystem>({.systemId = kPlayerSystemId, .displayName = "Player"}) &&
-               context.RegisterSystem<SceneLookSystem>({.systemId = kSceneLookSystemId, .displayName = "Scene Look"}) &&
-               context.BindComponentSystem({.componentType = kPlayerComponentType, .systemId = kPlayerSystemId});
+               context.RegisterComponent<HitTargetComponent>(
+                   {.typeName = kHitTargetComponentType,
+                    .displayName = "Hit Target",
+                    .description = "Takes bullet hits: recoil, flash, hit stop, effects"}) &&
+               context.RegisterSystem<HitReactionSystem>(
+                   {.systemId = kHitReactionSystemId, .displayName = "Hit Reaction"}) &&
+               context.BindComponentSystem({.componentType = kPlayerComponentType, .systemId = kPlayerSystemId}) &&
+               context.BindComponentSystem(
+                   {.componentType = kHitTargetComponentType, .systemId = kHitReactionSystemId});
     }
 };
 

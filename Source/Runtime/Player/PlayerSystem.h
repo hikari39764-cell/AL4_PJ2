@@ -1,14 +1,22 @@
 #pragma once
 
+#include <vector>
+
 #include "HIKARI/Project/GameSystem.h"
+
+#include "../Combat/HitReactionSystem.h"
 
 namespace Project_AL4_PJ2 {
 
 // PlayerComponent を持つオブジェクトを入力に従って動かす：移動・照準・射撃・リロード・回避と、
-// それに合わせたアニメーションの切り替え、弾の表示、見下ろしカメラの追従。
+// それに合わせたアニメーションの切り替え、弾の表示と的への当たり、見下ろしカメラの追従。
 class PlayerSystem final : public HIKARI::IGameSystem {
 public:
     void Update(HIKARI::WorldView& world, const HIKARI::FrameContext& frame) override;
+
+private:
+    // このフレームの的の一覧（毎フレーム集め直す。確保を繰り返さないよう持ち続ける）。
+    std::vector<HitTargetEntry> targets_;
 };
 
 } // namespace Project_AL4_PJ2

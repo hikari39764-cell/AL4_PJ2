@@ -22,20 +22,34 @@ void PlayerComponent::DescribeProperties(HIKARI::PropertyFields& fields) {
         fields.Float("spread", "Spread (deg)", spreadDegrees, 0.0f, 30.0f, 0.1f);
         fields.Float("bulletSpeed", "Bullet Speed (m/s)", bulletSpeed, 1.0f, 120.0f, 0.5f);
         fields.Float("bulletRange", "Bullet Range (m)", bulletRange, 1.0f, 100.0f, 0.5f);
-        fields.Float("muzzleForward", "Muzzle Forward (m)", muzzleForward, 0.0f, 3.0f, 0.01f);
-        fields.Float("muzzleHeight", "Muzzle Height (m)", muzzleHeight, 0.0f, 3.0f, 0.01f);
+        fields.Float("bulletDamage", "Bullet Damage", bulletDamage, 0.0f, 100.0f, 0.1f);
+        fields.Text("muzzleSocket", "Muzzle Bone", muzzleSocket);
+        fields.Float3("muzzleSocketOffset", "Muzzle Offset In Bone (m)", muzzleSocketOffset);
+        fields.Float("muzzleForward", "Muzzle Forward Without Bone (m)", muzzleForward, 0.0f, 3.0f, 0.01f);
+        fields.Float("muzzleHeight", "Muzzle Height Without Bone (m)", muzzleHeight, 0.0f, 3.0f, 0.01f);
         fields.Asset("muzzleVfx", "Muzzle Flash Effect", HIKARI::GameProjectAssetKind::VfxEffect, muzzleVfxGuid);
         fields.Asset("bulletVfx", "Bullet Tracer Effect", HIKARI::GameProjectAssetKind::VfxEffect, bulletVfxGuid);
+        fields.Asset("smokeFieldVfx", "Smoke Field Effect", HIKARI::GameProjectAssetKind::VfxEffect, smokeFieldVfxGuid);
+        fields.Float("smokeFieldRecenterDistance", "Smoke Field: Re-place When Idle Beyond (m)",
+                     smokeFieldRecenterDistance, 0.5f, 50.0f, 0.1f);
+        fields.Float("smokeFieldMaximumDistance", "Smoke Field: Always Re-place Beyond (m)", smokeFieldMaximumDistance,
+                     0.5f, 50.0f, 0.1f);
+        fields.Float("smokeFieldQuietSeconds", "Smoke Field: Idle Means No Shot For (s)", smokeFieldQuietSeconds, 0.0f,
+                     10.0f, 0.1f);
     }
     if (fields.Section("Camera", true)) {
         fields.SceneObject("camera", "Camera", cameraObjectId);
         fields.Float("cameraPitch", "Pitch (deg)", cameraPitchDegrees, 10.0f, 89.0f, 0.5f);
         fields.Float("cameraYaw", "Yaw (deg)", cameraYawDegrees, -180.0f, 180.0f, 1.0f);
-        fields.Float("cameraDistance", "Distance (m)", cameraDistance, 1.0f, 80.0f, 0.1f);
+        fields.Float("cameraDistance", "Distance (m)", cameraDistance, 1.0f, 120.0f, 0.1f);
         fields.Float("cameraFov", "Field of View (deg)", cameraFovDegrees, 5.0f, 90.0f, 0.5f);
         fields.Float("cameraFocusHeight", "Focus Height (m)", cameraFocusHeight, 0.0f, 3.0f, 0.01f);
         fields.Float("cameraLookAhead", "Look Ahead (m)", cameraLookAhead, 0.0f, 6.0f, 0.05f);
         fields.Float("cameraFollowSeconds", "Follow Lag (s)", cameraFollowSeconds, 0.0f, 2.0f, 0.01f);
+        fields.Float("cameraShakeAmplitude", "Shake Amplitude (m)", cameraShakeAmplitude, 0.0f, 3.0f, 0.01f);
+        fields.Float("cameraShakeFrequency", "Shake Frequency (Hz)", cameraShakeFrequency, 1.0f, 60.0f, 0.5f);
+        fields.Float("cameraShakeDecay", "Shake Decay (1/s)", cameraShakeDecay, 0.1f, 20.0f, 0.1f);
+        fields.Float("fireShake", "Shake Per Shot", fireShake, 0.0f, 1.0f, 0.01f);
     }
     if (fields.Section("Input", false)) {
         fields.InputAction("moveAction", "Move", HIKARI::GameProjectInputValueType::Axis2D, moveAction);

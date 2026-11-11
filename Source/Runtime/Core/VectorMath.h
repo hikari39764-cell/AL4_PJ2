@@ -50,6 +50,28 @@ inline float YawFromRotation(HIKARI::GameProjectQuaternion rotation) noexcept {
     return std::atan2(forwardX, forwardZ);
 }
 
+// axis は正規化済みであること。
+inline HIKARI::GameProjectQuaternion AxisAngleRotation(Float3 axis, float radians) noexcept {
+    const float half = radians * 0.5f;
+    const float sine = std::sin(half);
+    return {axis.x * sine, axis.y * sine, axis.z * sine, std::cos(half)};
+}
+
+// second を先に、first を後に掛けた回転（first ⊗ second）。
+inline HIKARI::GameProjectQuaternion Multiply(HIKARI::GameProjectQuaternion first,
+                                              HIKARI::GameProjectQuaternion second) noexcept {
+    return {first.w * second.x + first.x * second.w + first.y * second.z - first.z * second.y,
+            first.w * second.y - first.x * second.z + first.y * second.w + first.z * second.x,
+            first.w * second.z + first.x * second.y - first.y * second.x + first.z * second.w,
+            first.w * second.w - first.x * second.x - first.y * second.y - first.z * second.z};
+}
+
+inline Float3 Rotate(HIKARI::GameProjectQuaternion rotation, Float3 value) noexcept {
+    const Float3 axis{rotation.x, rotation.y, rotation.z};
+    const Float3 twice = Scale(Cross(axis, value), 2.0f);
+    return Add(value, Add(Scale(twice, rotation.w), Cross(axis, twice)));
+}
+
 inline float WrapAngle(float radians) noexcept {
     const float wrapped = std::fmod(radians + kPi, 2.0f * kPi);
     return (wrapped < 0.0f ? wrapped + 2.0f * kPi : wrapped) - kPi;

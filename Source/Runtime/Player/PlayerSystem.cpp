@@ -2,14 +2,16 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cstring>
+#include <span>
 #include <string>
 
 #include "HIKARI/Project/ActionViews.h"
 #include "HIKARI/Project/VfxView.h"
 
+#include "../Combat/HitTargetComponent.h"
+#include "../Core/EffectPlayback.h"
+#include "../Core/VectorMath.h"
 #include "PlayerComponent.h"
-#include "PlayerMath.h"
 
 namespace Project_AL4_PJ2 {
 namespace {
@@ -30,6 +32,15 @@ constexpr float kMaximumCameraPitchDegrees = 89.0f;
 constexpr Float3 kWorldUp{0.0f, 1.0f, 0.0f};
 // エンジンが提出元を見分けるための番号（同じオブジェクトの中で重ならなければよい）。
 constexpr uint64_t kCameraSourceId = 0x514C504Cu;
+constexpr uint64_t kHitStopSourceId = 0x51485354u;
+// カメラの揺れは、周期の合わない 2 つの波を重ねて、規則的に見えないようにする。
+// 値は波の形（周波数の比・位相・混ぜる割合）で、揺れの強さと速さはコンポーネントの調整値が決める。
+constexpr float kShakeSecondWaveRatio = 2.3f;
+constexpr float kShakeVerticalRatio = 1.3f;
+constexpr float kShakeSecondWaveWeight = 0.4f;
+constexpr float kShakePhaseA = 1.7f;
+constexpr float kShakePhaseB = 0.9f;
+constexpr float kShakePhaseC = 4.1f;
 
 struct PlayerInput {
     Float3 move{};
@@ -211,25 +222,24 @@ float NextUnitRandom(uint32_t& seed) noexcept {
     return static_cast<float>(seed >> 8u) * (1.0f / 16777216.0f);
 }
 
-Float3 MuzzlePosition(const PlayerComponent& player, Float3 position, float yawRadians) {
+// 銃口の位置。アニメーションで動いている銃の骨から取るので、弾と火花が銃の先から出る。
+// 骨が取れないとき（名前が違う・Animator の準備前）は、体の向きから決めた位置を使う。
+Float3 MuzzlePosition(const HIKARI::WorldView& world, uint64_t handle, const PlayerComponent& player, Float3 position,
+                      float yawRadians) {
+    HIKARI::GameProjectTransform socket{};
+    if (!player.muzzleSocket.empty() &&
+        world.GetAnimation().GetSocketTransform(handle, player.muzzleSocket,
+                                                HIKARI::GameProjectAnimationSocketSpace::World, socket)) {
+        const Float3 offset{player.muzzleSocketOffset.x * socket.scale.x, player.muzzleSocketOffset.y * socket.scale.y,
+                            player.muzzleSocketOffset.z * socket.scale.z};
+        return Add(socket.position, Rotate(socket.rotation, offset));
+    }
     const Float3 forward = Scale(DirectionFromYaw(yawRadians), player.muzzleForward);
     return Add(Add(position, forward), {0.0f, player.muzzleHeight, 0.0f});
 }
 
-// 効果を 1 回再生する。資産が設定されていなければ何もしない。効果の +Z が前。
-HIKARI::GameProjectVfxPlaybackHandle PlayEffect(const HIKARI::VfxView& vfx, const std::string& assetGuid,
-                                                uint64_t ownerHandle, Float3 position, float yawRadians,
-                                                uint32_t randomSeed) {
-    HIKARI::GameProjectVfxPlayRequest request{};
-    if (assetGuid.empty() || assetGuid.size() >= sizeof(request.asset.assetGuid)) {
-        return {};
-    }
-    std::memcpy(request.asset.assetGuid, assetGuid.data(), assetGuid.size());
-    request.ownerObjectHandle = ownerHandle;
-    request.transform.position = position;
-    request.transform.rotation = YawRotation(yawRadians);
-    request.randomSeed = randomSeed;
-    return vfx.Play(request);
+void AddCameraShake(PlayerRuntimeState& state, float amount) noexcept {
+    state.cameraTrauma = std::min(1.0f, state.cameraTrauma + amount);
 }
 
 void UpdateWeapon(const HIKARI::WorldView& world, uint64_t ownerHandle, const PlayerComponent& player,
@@ -257,40 +267,87 @@ void UpdateWeapon(const HIKARI::WorldView& world, uint64_t ownerHandle, const Pl
     }
     const float spread = (NextUnitRandom(state.spreadSeed) * 2.0f - 1.0f) * player.spreadDegrees * kDegreesToRadians;
     const float shotYaw = state.yawRadians + spread;
-    const Float3 muzzle = MuzzlePosition(player, position, state.yawRadians);
+    const Float3 muzzle = MuzzlePosition(world, ownerHandle, player, position, state.yawRadians);
     const HIKARI::VfxView vfx = world.GetVfx();
     slot->position = muzzle;
     slot->direction = DirectionFromYaw(shotYaw);
     slot->remainingRange = player.bulletRange;
     slot->active = true;
     // 弾は効果の根を飛ばすだけ。粒子は通った跡に残って曳光になる。
-    slot->effect = PlayEffect(vfx, player.bulletVfxGuid, ownerHandle, muzzle, shotYaw, state.spreadSeed);
+    slot->effect = PlayEffect(vfx, player.bulletVfxGuid, ownerHandle, muzzle, YawRotation(shotYaw), state.spreadSeed);
     if (slot->effect.IsValid()) {
         vfx.SetVelocity(slot->effect, Scale(slot->direction, player.bulletSpeed));
     }
-    PlayEffect(vfx, player.muzzleVfxGuid, ownerHandle, muzzle, state.yawRadians, state.spreadSeed);
+    PlayEffect(vfx, player.muzzleVfxGuid, ownerHandle, muzzle, YawRotation(state.yawRadians), state.spreadSeed);
+    AddCameraShake(state, player.fireShake);
     --state.ammo;
     state.fireCooldown = player.fireIntervalSeconds;
     state.sinceShot = 0.0f;
 }
 
-void UpdateBullets(const HIKARI::WorldView& world, const PlayerComponent& player, PlayerRuntimeState& state, float dt) {
+void StopBullet(const HIKARI::VfxView& vfx, PlayerBullet& bullet) {
+    // 曳光を止める。残っている粒子は自分の寿命で消える。
+    if (bullet.effect.IsValid()) {
+        vfx.Stop(bullet.effect);
+    }
+    bullet = PlayerBullet{};
+}
+
+// 当てた手応えを撃った側に掛ける：短く時間を止め、カメラを揺らす。
+void ApplyHitFeedback(const HIKARI::WorldView& world, PlayerRuntimeState& state, const HitFeedback& feedback) {
+    AddCameraShake(state, feedback.cameraShake);
+    if (feedback.hitStopSeconds <= 0.0f) {
+        return;
+    }
+    HIKARI::GameProjectTimeDilationRequest request{};
+    request.sourceId = kHitStopSourceId;
+    request.scale = std::clamp(feedback.hitStopScale, 0.0f, 1.0f);
+    request.durationUnscaledSeconds = feedback.hitStopSeconds;
+    world.GetTimeDilation().Request(request);
+}
+
+// 弾を進め、このフレームに通る線分が的に入ったら当てる。当たらずに射程が尽きた弾は消す。
+void UpdateBullets(const HIKARI::WorldView& world, const PlayerComponent& player, PlayerRuntimeState& state,
+                   std::span<const HitTargetEntry> targets, float dt) {
     const HIKARI::VfxView vfx = world.GetVfx();
     const float step = player.bulletSpeed * dt;
+    // 同じフレームに何発か当たっても、時間を止めるのは一番長い 1 回分。揺れは足す。
+    HitFeedback combined{};
     for (PlayerBullet& bullet : state.bullets) {
         if (!bullet.active) {
             continue;
         }
-        bullet.position = Add(bullet.position, Scale(bullet.direction, step));
-        bullet.remainingRange -= step;
-        if (bullet.remainingRange <= 0.0f) {
-            // 射程が尽きたら曳光を止める。残っている粒子は自分の寿命で消える。
-            if (bullet.effect.IsValid()) {
-                vfx.Stop(bullet.effect);
+        const float travel = std::min(step, bullet.remainingRange);
+        const Float3 end = Add(bullet.position, Scale(bullet.direction, travel));
+        const HitTargetEntry* struck = nullptr;
+        float nearest = 0.0f;
+        for (const HitTargetEntry& entry : targets) {
+            float fraction = 0.0f;
+            if (IntersectHurtVolume(*entry.component, entry.position, bullet.position, end, fraction) &&
+                (struck == nullptr || fraction < nearest)) {
+                struck = &entry;
+                nearest = fraction;
             }
-            bullet = PlayerBullet{};
+        }
+        if (struck != nullptr) {
+            const Float3 point = Add(bullet.position, Scale(bullet.direction, travel * nearest));
+            const HitFeedback feedback =
+                ApplyHit(world, struck->object, *struck->component, {point, bullet.direction, player.bulletDamage});
+            combined.cameraShake += feedback.cameraShake;
+            if (feedback.hitStopSeconds > combined.hitStopSeconds) {
+                combined.hitStopSeconds = feedback.hitStopSeconds;
+                combined.hitStopScale = feedback.hitStopScale;
+            }
+            StopBullet(vfx, bullet);
+            continue;
+        }
+        bullet.position = end;
+        bullet.remainingRange -= travel;
+        if (bullet.remainingRange <= 0.0f) {
+            StopBullet(vfx, bullet);
         }
     }
+    ApplyHitFeedback(world, state, combined);
 }
 
 // 足の動きが地面の速さと合うように、クリップを作ったときの速さとの比で再生倍率を決める。
@@ -352,9 +409,52 @@ void UpdateAnimation(const HIKARI::WorldView& world, uint64_t handle, const Play
     UpdateUpperLayer(animation, handle, player, state);
 }
 
+// 煙を解く流体の域を置く。域は置いた場所から動かせない（動かすと、ほかの効果からの煙が入らなくなる）ので、
+// プレイヤーが中心から離れたら置き直す。置き直すと中の煙は消えるため、しばらく撃っていないときを選ぶ。
+// 域の端まで来てしまったら、待たずに置き直す。
+void UpdateSmokeField(const HIKARI::VfxView& vfx, uint64_t ownerHandle, const PlayerComponent& player,
+                      PlayerRuntimeState& state, Float3 position) {
+    if (state.smokeField.IsValid()) {
+        // 域は箱なので、軸ごとの離れ具合で見る。
+        const Float3 offset = Subtract(position, state.smokeFieldCentre);
+        const float distance = std::max(std::fabs(offset.x), std::fabs(offset.z));
+        const bool quiet = state.sinceShot < 0.0f || state.sinceShot > player.smokeFieldQuietSeconds;
+        const bool move =
+            distance > player.smokeFieldMaximumDistance || (distance > player.smokeFieldRecenterDistance && quiet);
+        if (!move) {
+            return;
+        }
+        vfx.Stop(state.smokeField);
+    }
+    state.smokeField = PlayEffect(vfx, player.smokeFieldVfxGuid, ownerHandle, position, {}, state.spreadSeed);
+    state.smokeFieldCentre = position;
+}
+
+// カメラの揺れを画面の面内のずれとして返す。時間が止まっている間も揺れるように、倍率の掛からない時間で進める。
+Float3 AdvanceCameraShake(const PlayerComponent& player, PlayerRuntimeState& state, Float3 viewDirection,
+                          float unscaledDt) {
+    state.cameraTrauma = std::max(0.0f, state.cameraTrauma - player.cameraShakeDecay * unscaledDt);
+    state.cameraShakeTime += unscaledDt;
+    // 2 乗にすると、弱い揺れは目立たず、強い当たりだけがはっきり揺れる。
+    const float strength = player.cameraShakeAmplitude * state.cameraTrauma * state.cameraTrauma;
+    if (strength <= 0.0f) {
+        return {};
+    }
+    const float phase = state.cameraShakeTime * player.cameraShakeFrequency * 2.0f * kPi;
+    const float firstWeight = 1.0f - kShakeSecondWaveWeight;
+    const float sideways =
+        std::sin(phase) * firstWeight + std::sin(phase * kShakeSecondWaveRatio + kShakePhaseA) * kShakeSecondWaveWeight;
+    const float vertical =
+        std::sin(phase * kShakeVerticalRatio + kShakePhaseB) * firstWeight +
+        std::sin(phase * kShakeVerticalRatio * kShakeSecondWaveRatio + kShakePhaseC) * kShakeSecondWaveWeight;
+    const Float3 right = NormalizeOr(Cross(viewDirection, kWorldUp), {-1.0f, 0.0f, 0.0f});
+    const Float3 up = Cross(right, viewDirection);
+    return Scale(Add(Scale(right, sideways), Scale(up, vertical)), strength);
+}
+
 // 見下ろしカメラ。注視点を少し遅らせて追わせ、向いている側を少し広く見せる。
 void UpdateCamera(const HIKARI::WorldView& world, const PlayerComponent& player, PlayerRuntimeState& state,
-                  Float3 position, float dt) {
+                  Float3 position, float dt, float unscaledDt) {
     if (player.cameraObjectId == 0u) {
         return;
     }
@@ -369,12 +469,13 @@ void UpdateCamera(const HIKARI::WorldView& world, const PlayerComponent& player,
     const float pitch = std::min(player.cameraPitchDegrees, kMaximumCameraPitchDegrees) * kDegreesToRadians;
     const Float3 horizontal = DirectionFromYaw(player.cameraYawDegrees * kDegreesToRadians);
     const Float3 viewDirection{horizontal.x * std::cos(pitch), -std::sin(pitch), horizontal.z * std::cos(pitch)};
+    const Float3 shake = AdvanceCameraShake(player, state, viewDirection, unscaledDt);
 
     const HIKARI::CameraView camera = world.GetCamera();
     HIKARI::GameProjectCameraPoseRequest request{};
     request.cameraObjectHandle = cameraObject.GetHandle().value;
     request.sourceId = kCameraSourceId;
-    request.pose.target = Add(state.cameraFocus, {0.0f, player.cameraFocusHeight, 0.0f});
+    request.pose.target = Add(Add(state.cameraFocus, {0.0f, player.cameraFocusHeight, 0.0f}), shake);
     request.pose.eye = Subtract(request.pose.target, Scale(viewDirection, player.cameraDistance));
     request.pose.up = kWorldUp;
     request.pose.verticalFovRadians = player.cameraFovDegrees * kDegreesToRadians;
@@ -385,7 +486,8 @@ void UpdateCamera(const HIKARI::WorldView& world, const PlayerComponent& player,
     camera.SubmitPose(request);
 }
 
-void UpdatePlayer(const HIKARI::WorldView& world, HIKARI::ObjectView object, PlayerComponent& player, float dt) {
+void UpdatePlayer(const HIKARI::WorldView& world, HIKARI::ObjectView object, PlayerComponent& player,
+                  std::span<const HitTargetEntry> targets, float dt, float unscaledDt) {
     HIKARI::GameProjectTransform transform{};
     if (!object.GetWorldTransform(transform)) {
         return;
@@ -406,14 +508,17 @@ void UpdatePlayer(const HIKARI::WorldView& world, HIKARI::ObjectView object, Pla
         return;
     }
     const uint64_t handle = object.GetHandle().value;
+    const HIKARI::VfxView vfx = world.GetVfx();
+    UpdateSmokeField(vfx, handle, player, state, transform.position);
     if (state.action == PlayerAction::Dodge && actionBefore != PlayerAction::Dodge) {
         // 踏み切った足元に土ぼこりを出す。
-        PlayEffect(world.GetVfx(), player.dodgeVfxGuid, handle, transform.position, state.yawRadians, state.spreadSeed);
+        PlayEffect(vfx, player.dodgeVfxGuid, handle, transform.position, YawRotation(state.yawRadians),
+                   state.spreadSeed);
     }
     UpdateWeapon(world, handle, player, state, input, transform.position);
     UpdateAnimation(world, handle, player, state, Length(velocity));
-    UpdateBullets(world, player, state, dt);
-    UpdateCamera(world, player, state, transform.position, dt);
+    UpdateBullets(world, player, state, targets, dt);
+    UpdateCamera(world, player, state, transform.position, dt, unscaledDt);
 }
 
 } // namespace
@@ -423,10 +528,15 @@ void PlayerSystem::Update(HIKARI::WorldView& world, const HIKARI::FrameContext& 
     if (world.GetGameSession() == nullptr || frame.paused) {
         return;
     }
+    // 弾との当たりを見る的を、プレイヤーを回す前に集めておく（列挙の中で別の列挙をしないため）。
+    CollectHitTargets(world, targets_);
     const float dt = frame.gameDt;
+    const float unscaledDt = frame.unscaledDt;
     world.ForEachComponent<PlayerComponent>(
         HIKARI::MakeComponentTypeId(kPlayerComponentType),
-        [&world, dt](HIKARI::ObjectView object, PlayerComponent& player) { UpdatePlayer(world, object, player, dt); });
+        [this, &world, dt, unscaledDt](HIKARI::ObjectView object, PlayerComponent& player) {
+            UpdatePlayer(world, object, player, targets_, dt, unscaledDt);
+        });
 }
 
 } // namespace Project_AL4_PJ2

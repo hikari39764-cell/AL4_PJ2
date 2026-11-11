@@ -64,6 +64,12 @@ struct PlayerRuntimeState {
     int ammo = 0;
     uint32_t spreadSeed = 0x9E3779B9u;
     HIKARI::GameProjectFloat3 cameraFocus{};
+    // カメラの揺れの強さ（0〜1）。撃つ・当てるで増え、時間で減る。
+    float cameraTrauma = 0.0f;
+    float cameraShakeTime = 0.0f;
+    // プレイヤーの周りで煙を解く流体の域（撃った煙や着弾の土ぼこりがここへ入る）と、それを置いた位置。
+    HIKARI::GameProjectVfxPlaybackHandle smokeField{};
+    HIKARI::GameProjectFloat3 smokeFieldCentre{};
     std::array<PlayerBullet, kPlayerBulletCapacity> bullets{};
 };
 
@@ -91,20 +97,33 @@ public:
     float spreadDegrees = 1.5f;
     float bulletSpeed = 28.0f;
     float bulletRange = 22.0f;
+    float bulletDamage = 1.0f;
+    // 銃口は銃の骨（ソケット）から取る。骨が見つからないときだけ muzzleForward / muzzleHeight を使う。
+    std::string muzzleSocket = "weapon";
+    HIKARI::GameProjectFloat3 muzzleSocketOffset{0.0f, 0.67f, 0.0f};
     float muzzleForward = 1.05f;
     float muzzleHeight = 1.45f;
     std::string muzzleVfxGuid;
     std::string bulletVfxGuid;
+    std::string smokeFieldVfxGuid;
+    // 煙の域を置き直す距離。域の大きさ（効果の資産の domainSize）の半分より小さくしておく。
+    float smokeFieldRecenterDistance = 4.0f;
+    float smokeFieldMaximumDistance = 6.0f;
+    float smokeFieldQuietSeconds = 2.0f;
 
     // カメラ
     uint64_t cameraObjectId = 0u;
-    float cameraPitchDegrees = 55.0f;
+    float cameraPitchDegrees = 58.0f;
     float cameraYawDegrees = 0.0f;
-    float cameraDistance = 16.0f;
-    float cameraFovDegrees = 20.0f;
+    float cameraDistance = 27.0f;
+    float cameraFovDegrees = 24.0f;
     float cameraFocusHeight = 1.0f;
-    float cameraLookAhead = 1.2f;
+    float cameraLookAhead = 1.8f;
     float cameraFollowSeconds = 0.12f;
+    float cameraShakeAmplitude = 0.3f;
+    float cameraShakeFrequency = 24.0f;
+    float cameraShakeDecay = 3.0f;
+    float fireShake = 0.1f;
 
     // 入力
     std::string moveAction = "Gameplay.Move";
