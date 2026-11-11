@@ -90,14 +90,14 @@ public:
     float muzzleForward = 1.05f;
     float muzzleHeight = 1.45f;
     float muzzleFlashSeconds = 0.05f;
-    float muzzleFlashScale = 2.5f;
+    float muzzleFlashScale = 1.6f;
     std::string bulletModelGuid;
 
     // カメラ
     uint64_t cameraObjectId = 0u;
     float cameraPitchDegrees = 55.0f;
     float cameraYawDegrees = 0.0f;
-    float cameraDistance = 18.0f;
+    float cameraDistance = 16.0f;
     float cameraFovDegrees = 20.0f;
     float cameraFocusHeight = 1.0f;
     float cameraLookAhead = 1.2f;
@@ -107,8 +107,8 @@ public:
     std::string moveAction = "Gameplay.Move";
     std::string aimAction = "Gameplay.Look";
     std::string fireAction = "Gameplay.Fire";
-    std::string dodgeAction = "Gameplay.Jump";
-    std::string reloadAction = "Gameplay.Interact";
+    std::string dodgeAction = "Gameplay.Dodge";
+    std::string reloadAction = "Gameplay.Reload";
     bool firesWithPointerButton = true;
 
     // アニメーション

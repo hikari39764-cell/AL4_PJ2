@@ -72,8 +72,8 @@ bool PointerAim(const HIKARI::WorldView& world, Float3 playerPosition, Float3& o
     const float screenX = (pointer.x - content.left) / width * 2.0f - 1.0f;
     const float screenY = 1.0f - (pointer.y - content.top) / height * 2.0f;
     const Float3 forward = NormalizeOr(Subtract(snapshot.pose.target, snapshot.pose.eye), {0.0f, 0.0f, 1.0f});
-    const Float3 right = NormalizeOr(Cross(snapshot.pose.up, forward), {1.0f, 0.0f, 0.0f});
-    const Float3 up = Cross(forward, right);
+    const Float3 right = NormalizeOr(Cross(forward, snapshot.pose.up), {-1.0f, 0.0f, 0.0f});
+    const Float3 up = Cross(right, forward);
     Float3 origin = snapshot.pose.eye;
     Float3 direction = forward;
     if (snapshot.lens.projection == HIKARI::GameProjectCameraProjectionKind::Orthographic) {
@@ -106,7 +106,8 @@ PlayerInput ReadInput(const HIKARI::WorldView& world, const PlayerComponent& pla
     PlayerInput result{};
     const HIKARI::InputView input = world.GetInput();
     const Float3 cameraForward = DirectionFromYaw(player.cameraYawDegrees * kDegreesToRadians);
-    const Float3 cameraRight = Cross(kWorldUp, cameraForward);
+    // エンジンは右手系なので、+Z を向くと画面の右は -X になる（前 × 上）。
+    const Float3 cameraRight = Cross(cameraForward, kWorldUp);
 
     HIKARI::GameProjectInputActionState action{};
     if (ReadAction(input, player.moveAction, action)) {
