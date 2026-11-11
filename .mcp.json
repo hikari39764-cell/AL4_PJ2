@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "hikari": {
+      "args": [
+        "mcp"
+      ],
+      "command": "D:/PJ/HIKARI_Engine/out/build/editor-release/bin/hikari.exe"
+    }
+  }
+}

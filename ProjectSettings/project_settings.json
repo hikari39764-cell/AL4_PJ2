@@ -1,0 +1,11 @@
+{
+  "enabledRuntimeFeatures": [
+    "Rendering",
+    "Lighting",
+    "Camera",
+    "HIKARI.SceneFlow",
+    "Project_AL4_PJ2.Gameplay"
+  ],
+  "startupSceneGuid": "",
+  "version": 5
+}
