@@ -62,6 +62,24 @@
     },
     {
       "clamp": true,
+      "displayName": "Fire",
+      "id": "Gameplay.Fire",
+      "valueType": "Button"
+    },
+    {
+      "clamp": true,
+      "displayName": "Dodge",
+      "id": "Gameplay.Dodge",
+      "valueType": "Button"
+    },
+    {
+      "clamp": true,
+      "displayName": "Reload",
+      "id": "Gameplay.Reload",
+      "valueType": "Button"
+    },
+    {
+      "clamp": true,
       "displayName": "Menu Navigation",
       "id": "UI.Navigate",
       "valueType": "Axis2D"

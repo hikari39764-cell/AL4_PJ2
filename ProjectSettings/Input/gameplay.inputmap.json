@@ -166,6 +166,41 @@
       "source": "GamepadButton"
     },
     {
+      "action": "Gameplay.Fire",
+      "component": 0,
+      "control": "Left",
+      "scale": 1.0,
+      "source": "MouseButton"
+    },
+    {
+      "action": "Gameplay.Dodge",
+      "component": 0,
+      "control": "Space",
+      "scale": 1.0,
+      "source": "Keyboard"
+    },
+    {
+      "action": "Gameplay.Dodge",
+      "component": 0,
+      "control": "B",
+      "scale": 1.0,
+      "source": "GamepadButton"
+    },
+    {
+      "action": "Gameplay.Reload",
+      "component": 0,
+      "control": "R",
+      "scale": 1.0,
+      "source": "Keyboard"
+    },
+    {
+      "action": "Gameplay.Reload",
+      "component": 0,
+      "control": "X",
+      "scale": 1.0,
+      "source": "GamepadButton"
+    },
+    {
       "action": "Gameplay.Menu",
       "component": 0,
       "control": "Tab",
