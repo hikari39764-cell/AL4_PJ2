@@ -1,0 +1,14 @@
+{
+  "displayName": "q_muzzle_flash",
+  "guid": "b5992cd3916cff60faf1956932b5d503",
+  "importSettings": {
+    "cookVfx": true,
+    "outputFormat": "HVFXC",
+    "sourceFormat": ".hvfx"
+  },
+  "importerId": "VfxAssetImporter",
+  "importerVersion": 27,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Vfx/Q/q_muzzle_flash.hvfx",
+  "type": "VfxEffect"
+}

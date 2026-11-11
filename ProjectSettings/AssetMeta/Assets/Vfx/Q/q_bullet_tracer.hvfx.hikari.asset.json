@@ -1,0 +1,14 @@
+{
+  "displayName": "q_bullet_tracer",
+  "guid": "26ebe9981cf6ce673d4325b09846f949",
+  "importSettings": {
+    "cookVfx": true,
+    "outputFormat": "HVFXC",
+    "sourceFormat": ".hvfx"
+  },
+  "importerId": "VfxAssetImporter",
+  "importerVersion": 27,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Vfx/Q/q_bullet_tracer.hvfx",
+  "type": "VfxEffect"
+}

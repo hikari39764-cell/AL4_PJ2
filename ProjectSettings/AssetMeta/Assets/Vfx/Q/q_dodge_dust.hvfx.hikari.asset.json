@@ -1,0 +1,14 @@
+{
+  "displayName": "q_dodge_dust",
+  "guid": "f2e60f1446d3c0f14677adf22188b663",
+  "importSettings": {
+    "cookVfx": true,
+    "outputFormat": "HVFXC",
+    "sourceFormat": ".hvfx"
+  },
+  "importerId": "VfxAssetImporter",
+  "importerVersion": 27,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Vfx/Q/q_dodge_dust.hvfx",
+  "type": "VfxEffect"
+}
