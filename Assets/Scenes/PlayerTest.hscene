@@ -93,6 +93,9 @@
             },
             "muzzleVfx": {
               "$hikari.assetGuid": "b5992cd3916cff60faf1956932b5d503"
+            },
+            "smokeFieldVfx": {
+              "$hikari.assetGuid": "026f99bcff1cdda908ae4dd328c7001d"
             }
           },
           "type": "Project_AL4_PJ2.Player"
@@ -131,7 +134,7 @@
             "enabled": true,
             "farClip": 200,
             "nearClip": 0.1,
-            "verticalFovDegrees": 20
+            "verticalFovDegrees": 24
           },
           "type": "CameraComponent"
         }
@@ -146,11 +149,11 @@
       "transform": {
         "position": [
           0.0,
-          15.739999771118164,
-          -10.319999694824219
+          23.897,
+          -12.508
         ],
         "rotationEulerDeg": [
-          55.0,
+          58.0,
           0.0,
           0.0
         ],
@@ -252,6 +255,309 @@
           1.0
         ]
       }
+    },
+    {
+      "components": [
+        {
+          "id": 4001,
+          "properties": {
+            "assetId": "8765a7a4a618958411267c9ca1516fe7",
+            "castShadow": true,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": true,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 40,
+      "name": "DummyStand_A",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          0.0,
+          0.0,
+          7.0
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "components": [
+        {
+          "id": 4101,
+          "properties": {
+            "assetId": "7fd5818809ad9c01e2a104ffeddf1444",
+            "castShadow": true,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": false,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        },
+        {
+          "id": 4102,
+          "properties": {
+            "breakVfx": {
+              "$hikari.assetGuid": "3e3bbb88c9b8dba08df63f899880da2d"
+            },
+            "flashModel": {
+              "$hikari.assetGuid": "2035c34aba9aa1e26c4b9be9f4028de5"
+            },
+            "hitVfx": {
+              "$hikari.assetGuid": "77ff1fd9c8706a93b423c89739e894e9"
+            }
+          },
+          "type": "Project_AL4_PJ2.HitTarget"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 41,
+      "name": "DummyBag_A",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          0.0,
+          0.55,
+          7.0
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "components": [
+        {
+          "id": 4201,
+          "properties": {
+            "assetId": "8765a7a4a618958411267c9ca1516fe7",
+            "castShadow": true,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": true,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 42,
+      "name": "DummyStand_B",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          -4.5,
+          0.0,
+          5.0
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "components": [
+        {
+          "id": 4301,
+          "properties": {
+            "assetId": "7fd5818809ad9c01e2a104ffeddf1444",
+            "castShadow": true,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": false,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        },
+        {
+          "id": 4302,
+          "properties": {
+            "breakVfx": {
+              "$hikari.assetGuid": "3e3bbb88c9b8dba08df63f899880da2d"
+            },
+            "flashModel": {
+              "$hikari.assetGuid": "2035c34aba9aa1e26c4b9be9f4028de5"
+            },
+            "hitVfx": {
+              "$hikari.assetGuid": "77ff1fd9c8706a93b423c89739e894e9"
+            }
+          },
+          "type": "Project_AL4_PJ2.HitTarget"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 43,
+      "name": "DummyBag_B",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          -4.5,
+          0.55,
+          5.0
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "components": [
+        {
+          "id": 4401,
+          "properties": {
+            "assetId": "8765a7a4a618958411267c9ca1516fe7",
+            "castShadow": true,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": true,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 44,
+      "name": "DummyStand_C",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          4.5,
+          0.0,
+          8.5
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
+    },
+    {
+      "components": [
+        {
+          "id": 4501,
+          "properties": {
+            "assetId": "7fd5818809ad9c01e2a104ffeddf1444",
+            "castShadow": true,
+            "includeInLightingBake": false,
+            "materialOverrides": [],
+            "materialSetAssetGuid": "",
+            "postGroupMask": 1,
+            "receiveShadow": true,
+            "renderStatic": false,
+            "visible": true
+          },
+          "type": "ModelComponent"
+        },
+        {
+          "id": 4502,
+          "properties": {
+            "breakVfx": {
+              "$hikari.assetGuid": "3e3bbb88c9b8dba08df63f899880da2d"
+            },
+            "flashModel": {
+              "$hikari.assetGuid": "2035c34aba9aa1e26c4b9be9f4028de5"
+            },
+            "hitVfx": {
+              "$hikari.assetGuid": "77ff1fd9c8706a93b423c89739e894e9"
+            }
+          },
+          "type": "Project_AL4_PJ2.HitTarget"
+        }
+      ],
+      "editorLocked": false,
+      "editorVisible": true,
+      "enabled": true,
+      "id": 45,
+      "name": "DummyBag_C",
+      "parent": null,
+      "sourcePrefabId": "",
+      "transform": {
+        "position": [
+          4.5,
+          0.55,
+          8.5
+        ],
+        "rotationEulerDeg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      }
     }
   ],
   "sceneName": "PlayerTest",
@@ -261,19 +567,6 @@
       "executionOrder": 100,
       "settings": {},
       "systemId": "Project_AL4_PJ2.Game"
-    },
-    {
-      "enabled": true,
-      "executionOrder": 110,
-      "settings": {
-        "pixelColorLevels": 16.0,
-        "pixelDither": 0.15,
-        "pixelOutline": 0.6,
-        "pixelOverride": true,
-        "pixelSize": 4.0,
-        "renderStyle": "engine.style.pixel"
-      },
-      "systemId": "Project_AL4_PJ2.SceneLook"
     },
     {
       "enabled": true,
