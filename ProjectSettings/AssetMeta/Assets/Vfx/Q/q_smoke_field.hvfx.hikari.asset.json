@@ -1,0 +1,14 @@
+{
+  "displayName": "q_smoke_field",
+  "guid": "026f99bcff1cdda908ae4dd328c7001d",
+  "importSettings": {
+    "cookVfx": true,
+    "outputFormat": "HVFXC",
+    "sourceFormat": ".hvfx"
+  },
+  "importerId": "VfxAssetImporter",
+  "importerVersion": 27,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Vfx/Q/q_smoke_field.hvfx",
+  "type": "VfxEffect"
+}

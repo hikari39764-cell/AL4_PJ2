@@ -1,0 +1,14 @@
+{
+  "displayName": "q_hit_spark",
+  "guid": "77ff1fd9c8706a93b423c89739e894e9",
+  "importSettings": {
+    "cookVfx": true,
+    "outputFormat": "HVFXC",
+    "sourceFormat": ".hvfx"
+  },
+  "importerId": "VfxAssetImporter",
+  "importerVersion": 27,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Vfx/Q/q_hit_spark.hvfx",
+  "type": "VfxEffect"
+}

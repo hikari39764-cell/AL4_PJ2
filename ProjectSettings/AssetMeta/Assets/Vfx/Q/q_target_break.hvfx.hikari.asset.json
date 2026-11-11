@@ -1,0 +1,14 @@
+{
+  "displayName": "q_target_break",
+  "guid": "3e3bbb88c9b8dba08df63f899880da2d",
+  "importSettings": {
+    "cookVfx": true,
+    "outputFormat": "HVFXC",
+    "sourceFormat": ".hvfx"
+  },
+  "importerId": "VfxAssetImporter",
+  "importerVersion": 27,
+  "metaVersion": 1,
+  "sourcePath": "Assets/Vfx/Q/q_target_break.hvfx",
+  "type": "VfxEffect"
+}
