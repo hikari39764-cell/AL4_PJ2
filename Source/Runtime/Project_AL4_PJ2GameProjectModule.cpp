@@ -6,6 +6,7 @@
 
 #include "Player/PlayerComponent.h"
 #include "Player/PlayerSystem.h"
+#include "Presentation/SceneLookSystem.h"
 
 namespace Project_AL4_PJ2 {
 
@@ -48,13 +49,14 @@ public:
     std::string_view GetFeatureId() const noexcept override { return "Project_AL4_PJ2.Gameplay"; }
     std::string_view GetDisplayName() const noexcept override { return "Gameplay"; }
     std::string_view GetDescription() const noexcept override { return "Project game logic"; }
-    // プレイヤーがアニメーションを切り替えるので、Animation を必ず有効にさせる。
+    // プレイヤーがアニメーションを切り替え、SceneLook が後処理の値を上書きするので、両方を必ず有効にさせる。
     std::span<const std::string_view> GetRequiredFeatureIds() const noexcept override {
-        static constexpr std::array<std::string_view, 1> features{{"Animation"}};
+        static constexpr std::array<std::string_view, 2> features{{"Animation", "ActionPresentation"}};
         return features;
     }
     std::span<const HIKARI::RuntimeSystemDefault> GetDefaultSystems() const noexcept override {
-        static constexpr std::array<HIKARI::RuntimeSystemDefault, 1> systems{{{"Project_AL4_PJ2.Game", true, 100}}};
+        static constexpr std::array<HIKARI::RuntimeSystemDefault, 2> systems{
+            {{"Project_AL4_PJ2.Game", true, 100}, {kSceneLookSystemId, true, 110}}};
         return systems;
     }
     bool Register(HIKARI::RuntimeFeatureContext& context) override {
@@ -63,6 +65,7 @@ public:
                                                            .displayName = "Player",
                                                            .description = "Q: move, aim, fire, reload, dodge"}) &&
                context.RegisterSystem<PlayerSystem>({.systemId = kPlayerSystemId, .displayName = "Player"}) &&
+               context.RegisterSystem<SceneLookSystem>({.systemId = kSceneLookSystemId, .displayName = "Scene Look"}) &&
                context.BindComponentSystem({.componentType = kPlayerComponentType, .systemId = kPlayerSystemId});
     }
 };
